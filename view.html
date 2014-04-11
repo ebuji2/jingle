@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="js/jingle.js"></script>
+<title>无标题文档</title>
+<script type="text/javascript">
+$(function(){
+   var View = Jingle.View.extend({
+	    template : '#page1',
+		events : {
+			'click a' : 'click'
+		},
+		click : function(e){
+			var html = this.$('a').html();
+			alert(html);
+			return false;
+		}
+   });
+   var view = new View({
+		parent : $('body')
+   });
+   console.log(view.options);
+   
+    var View2 = Jingle.View.extend({
+		template : '<a href="#">aaaaaaaaaaaaaaaaaaaaaaaaaaa</a>',
+		initialize : function(parent,arg1,arg2){
+			alert(arg1);
+			alert(arg2);
+			this.$el.append(this.template);
+			this.$el.appendTo(parent);
+			console.log(this.$el.html());
+		},
+		events : {
+			'click a' : 'click'
+		},
+		click : function(e){
+			var html = this.$('a').html();
+			alert(html);
+			return false;
+		}
+   });
+   new View2($('body'),1,2);
+});
+</script>
+</head>
+<body>
+<div id="page1" data-role="template">
+	aaaaaaaaaaaaa
+    <a href="#">测试</a>
+</div>
+</body>
+</html>

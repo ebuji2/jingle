@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="js/jingle.js"></script>
+<script type="text/javascript">
+$(function(){
+	var User = Jingle.Model.extend({
+		idAttribute : 'id',	
+		defaults : {
+			name : '匿名用户'
+		}
+	});
+	var user1 = new User();
+	user1.set('id','user1');
+	user1.set('age',18);
+	console.log('----------数据字段------------');
+	console.log(user1.get('name'));
+	console.log(user1.get('age'));
+	var user2 = new User({
+		id : 'user2',
+		name : '张三'	
+	});
+	user2.set('age',20);
+	console.log(user2.get('name'));
+	console.log(user2.get('age'));
+	var UserList = Jingle.Collection.extend({
+		model : User
+	});
+	var userList = new UserList();
+	userList.add(user1);
+	userList.add(user2);
+	console.log('----------集合定位------------');
+	console.log(userList.getAt(1).get('name'));
+	console.log(userList.getById('user2').get('name'));
+	
+	var UserListView = Jingle.View.extend({
+		template : '#userList',
+		initialize : function(){
+			console.log('----------遍历打印------------');
+			this.collection.each(function(){
+				console.log(this.get('name'));
+			});
+			var Row = Jingle.View.extend({
+				template : '#userListRow',
+				events : {
+					'click a' : 'click'	
+				},
+				click : function(){
+					alert();
+					return false;
+				}
+			});
+			var table = this.$el;
+			this.collection.each(function(){
+				new Row({
+					parent : table,
+					model : this
+				});
+			});
+			this.$el.appendTo(this.parent);
+		}
+	}); 
+	new UserListView({
+		parent : $('body'),
+		collection : userList
+	});
+});
+</script>
+</head>
+<body>
+<table id="userList" border="1" style="width:100%"  data-role="template">
+ 	<tr>
+    	<th>Id</th>
+        <th>姓名</th>
+        <th>年龄</th>
+        <th>操作</th>
+    </tr>
+    <tr id="userListRow" data-role="template">
+        <td>${id}</td>
+        <td>${name}</td>
+        <td>${age}</td>
+        <td>
+        	<a href="#edit/${id}">编辑</a>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

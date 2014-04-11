@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="js/jingle.js"></script>
+<script type="text/javascript">
+$(function(){
+	var User = Jingle.Model.extend({
+		urlRoot : 'http://localhost:8080/Backbone/user',
+		error : function(){
+			alert('服务器忙,请稍后再试');
+		}
+	});
+	var UserList = Jingle.Collection.extend({
+		model : User,
+		parse : function(rest){
+			console.log('------服务器返回结果------');
+			console.log(rest);
+			return rest;
+		}
+	});
+	var UserListView = Jingle.View.extend({
+		template : '#userList',
+		initialize : function(){
+			var self = this;
+			var Row = Jingle.View.extend({
+				template : '#userListRow',
+				events : {
+					'click .js_delete' : 'delete'
+				},
+				delete : function(){
+					this.model.delete(function(){
+						Jingle.Router.navigate('',true);
+					});
+					return false;
+				}
+			});
+			var table = this.$el;
+			this.collection.each(function(){
+				var model = this;
+				new Row({
+					parent : table,
+					model : model
+				});
+			});
+			this.$el.appendTo(this.parent);	
+		},
+	}); 
+	var userEditView = Jingle.View.extend({
+		template : '#userEdit',
+		events : {
+			'click button' : 'submit'
+		},
+		submit : function(){
+			var self = this;
+			var array = this.$el.serializeArray();
+			if(this.model){
+				this.model.update(array,function(){
+					Jingle.Router.navigate('',true);
+				});
+			}else{
+				this.collection.insert(array,function(rest){
+					if(rest.id){
+						this.setId(rest.id);
+					}
+					Jingle.Router.navigate('',true);
+				});
+			}
+			return false;
+		}
+	});
+	var userRouter = Jingle.Router.extend({
+		initialize : function(){
+			var self = this;
+			this.parent = $('#body');
+			this.collection = new UserList();
+		},
+		onNavigate :function(){
+			this.parent.empty();
+		},
+		routers : {
+			'' : 'showList',
+			'list' : 'showList',
+			'add' : 'add',
+			'edit/:id' : 'edit',
+			'refresh' : 'refresh'
+		},
+		showList : function(){
+			console.log('showList');
+			var parent = this.parent;
+			this.collection.fetchOnce(function(){
+				new UserListView({
+					parent : parent,
+					collection : this
+				});
+			});
+		},
+		refresh : function(){
+			var parent = this.parent;
+			this.collection.fetch(function(){
+				new UserListView({
+					parent : parent,
+					collection : this
+				});
+			});
+		},
+		add : function(){
+			new userEditView({
+				parent : this.parent,
+				collection : this.collection
+			});
+		},
+		edit : function(id){
+			console.log('edit' + id);
+			var model = this.collection.getById(id);
+			new userEditView({
+				parent : this.parent,
+				collection : this.collection,	
+				model : model
+			});
+		}
+	});
+	new userRouter();
+	Jingle.Router.start();
+});
+</script>
+</head>
+<body bgcolor="#ccc">
+<a href="#add">添加</a>
+<a href="#refresh">刷新</a>
+<div id = "body"></div>
+<table id="userList" border="1" style="width:100%"  data-role="template">
+ 	<tr>
+    	<th>Id</th>
+        <th>姓名</th>
+        <th>年龄</th>
+        <th>操作</th>
+    </tr>
+    <tr id="userListRow" data-role="template">
+        <td>${id}</td>
+        <td>${name}</td>
+        <td>${age}</td>
+        <td>
+        	<a href="#edit/${id}">编辑</a>
+            <a class="js_delete" _id="${id}" href="#">删除</a>
+        </td>
+    </tr>
+</table>
+<form id="userEdit" data-role="template">
+ <div>
+ 	姓名：<input name="name" value='${name}'/>
+ </div>
+ <div>
+ 	年龄：<input name="age" value='${age}'/>
+ </div>
+ <button>保存</button>
+ <a href="#">返回</a>
+</form>
+</body>
+</html>
